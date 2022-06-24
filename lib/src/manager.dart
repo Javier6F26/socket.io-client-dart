@@ -84,10 +84,7 @@ class Manager extends EventEmitter {
     reconnectionDelay = options['reconnectionDelay'] ?? 1000;
     reconnectionDelayMax = options['reconnectionDelayMax'] ?? 5000;
     randomizationFactor = options['randomizationFactor'] ?? 0.5;
-    backoff = _Backoff(
-        min: reconnectionDelay,
-        max: reconnectionDelayMax,
-        jitter: randomizationFactor);
+    backoff = _Backoff(min: reconnectionDelay, max: reconnectionDelayMax, jitter: randomizationFactor);
     timeout = options['timeout'] ?? 20000;
     this.uri = uri;
     autoConnect = options['autoConnect'] != false;
@@ -95,6 +92,7 @@ class Manager extends EventEmitter {
   }
 
   num? get randomizationFactor => _randomizationFactor;
+
   set randomizationFactor(num? v) {
     _randomizationFactor = v;
     backoff?.jitter = v;
@@ -108,6 +106,7 @@ class Manager extends EventEmitter {
   /// @api public
   ///
   num? get reconnectionDelayMax => _reconnectionDelayMax;
+
   set reconnectionDelayMax(num? v) {
     _reconnectionDelayMax = v;
     backoff?.max = v;
@@ -134,8 +133,7 @@ class Manager extends EventEmitter {
   /// @return {Manager} self
   /// @api public
   ///
-  Manager open({callback, Map? opts}) =>
-      connect(callback: callback, opts: opts);
+  Manager open({callback, Map? opts}) => connect(callback: callback, opts: opts);
 
   Manager connect({callback, Map? opts}) {
     _logger.fine('readyState $readyState');
@@ -172,8 +170,7 @@ class Manager extends EventEmitter {
       _logger.fine('connect attempt will timeout after $timeout');
 
       if (timeout == 0) {
-        openSubDestroy
-            .destroy(); // prevents a race condition with the 'open' event
+        openSubDestroy.destroy(); // prevents a race condition with the 'open' event
       }
       // set timer
       var timer = Timer(Duration(milliseconds: timeout!.toInt()), () {
@@ -312,11 +309,12 @@ class Manager extends EventEmitter {
     // if (encoding != true) {
     // encode, then write to engine with result
     // encoding = true;
-    var encodedPackets = encoder.encode(packet);
+    encoder.encode(
+        packet,
+        (encodedPackets) => {
+              for (var i = 0; i < encodedPackets.length; i++) {engine!.write(encodedPackets[i], packet['options'])}
+            });
 
-    for (var i = 0; i < encodedPackets.length; i++) {
-      engine!.write(encodedPackets[i], packet['options']);
-    }
     // } else {
     // add packet to the queue
     // packetBuffer.add(packet);
