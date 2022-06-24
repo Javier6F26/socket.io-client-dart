@@ -10,7 +10,9 @@ environment:
 
 dependencies:
   logging: '^1.0.0'
-  socket_io_common: '^2.0.0-beta.1-nullsafety.0'
+  socket_io_common:
+    git:
+      url: https://github.com/Javier6F26/socket_io_common
   js: '^0.6.3'
 
 dev_dependencies:
