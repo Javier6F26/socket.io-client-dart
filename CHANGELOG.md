@@ -1,3 +1,41 @@
+## 2.0.3+1
+
+Fix dart analyzing issues
+
+## 2.0.3
+
+**New Feature:**
+
+* [#338](https://github.com/rikulo/socket.io-client-dart/pull/338) feat: implement connection state recovery
+
+## 2.0.2
+
+**Bug fix:**
+
+* [#330](https://github.com/rikulo/socket.io-client-dart/issues/330) Client throws error when buffer is received
+
+## 2.0.1
+
+**New Feature:**
+
+* [#310](https://github.com/rikulo/socket.io-client-dart/pull/310) Add setAuthFn for OptionBuilder
+
+**Bug fix:**
+
+* [#287](https://github.com/rikulo/socket.io-client-dart/issues/287) reconnecting event is not triggered
+
+## 2.0.0
+
+**New Feature:**
+
+* [#237](https://github.com/rikulo/socket.io-client-dart/pull/237) Allow sending an ack with multiple data items (making it consistent with emit)
+
+## 1.0.2
+
+**New Feature:**
+
+* [#237](https://github.com/rikulo/socket.io-client-dart/pull/237) Allow sending an ack with multiple data items (making it consistent with emit)
+
 ## 1.0.1
 
 **Bug fix:**

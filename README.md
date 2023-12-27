@@ -7,7 +7,7 @@ Port of awesome JavaScript Node.js library - [Socket.io-client v2.0.1~v3.0.3](ht
 | socket.io-client-dart | Socket.io Server
 -------------------|----------------
 `v0.9.*` ~ `v1.* ` | `v2.*`
-`v2.*`             | `v3.*`
+`v2.*`             | `v3.*` & `v4.*`
 
 ## Usage
 
@@ -17,7 +17,7 @@ import 'package:socket_io/socket_io.dart';
 
 main() {
   // Dart server
-  var io = new Server();
+  var io = Server();
   var nsp = io.of('/some');
   nsp.on('connection', (client) {
     print('connection /some');
@@ -222,7 +222,7 @@ class BuildWithSocketStream extends StatelessWidget {
 ```dart
 class MyHttpOverrides extends HttpOverrides {
   @override
-  HttpClient createHttpClient(SecurityContext context) {
+  HttpClient createHttpClient(SecurityContext? context) {
     return super.createHttpClient(context)
       ..badCertificateCallback =
           (X509Certificate cert, String host, int port) => true;
@@ -230,7 +230,7 @@ class MyHttpOverrides extends HttpOverrides {
 }
 
 void main() {
-  HttpOverrides.global = new MyHttpOverrides();
+  HttpOverrides.global = MyHttpOverrides();
   runApp(MyApp());
 }
 ```
@@ -266,6 +266,7 @@ If you'd like to contribute back to the core, you can [fork this repository](htt
 
 If you are new to Git or GitHub, please read [this guide](https://help.github.com/) first.
 
+Contribution of all kinds is welcome. Please read [Contributing.md](https://github.com/rikulo/socket.io-client-dart/blob/master/contributing.md) in this repository.
 ## Who Uses
 
 - [Quire](https://quire.io) - a simple, collaborative, multi-level task management tool.
@@ -285,3 +286,7 @@ If you are new to Git or GitHub, please read [this guide](https://help.github.co
 - Thanks [@jorgefspereira](https://github.com/jorgefspereira) for https://github.com/rikulo/socket.io-client-dart/pull/177
 - Thanks [@fzyzcjy](https://github.com/fzyzcjy) for https://github.com/rikulo/socket.io-client-dart/pull/188
 - Thanks [@darwin-morocho](https://github.com/darwin-morocho) for https://github.com/rikulo/socket.io-client-dart/pull/189
+- Thanks [@chatziko](https://github.com/chatziko) for https://github.com/rikulo/socket.io-client-dart/pull/237
+- Thanks [@Astray-git](https://github.com/Astray-git) for https://github.com/rikulo/socket.io-client-dart/pull/313
+- Thanks [@Astray-git](https://github.com/Astray-git) for https://github.com/rikulo/socket.io-client-dart/pull/310
+- Thanks [@Frank3K](https://github.com/Frank3K) for https://github.com/rikulo/socket.io-client-dart/pull/338

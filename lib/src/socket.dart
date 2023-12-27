@@ -24,7 +24,7 @@ import 'package:socket_io_common/src/parser/parser.dart';
 /// @api private
 ///
 
-const List EVENTS = [
+const List events = [
   'connect',
   'connect_error',
   'connect_timeout',
@@ -59,10 +59,12 @@ class Socket extends EventEmitter {
   List sendBuffer = [];
   List receiveBuffer = [];
   String? query;
-  dynamic? auth;
+  dynamic auth;
   List? subs;
   Map flags = {};
   String? id;
+  String? pid;
+  String? lastOffset;
 
   Socket(this.io, this.nsp, this.opts) {
     json = this; // compat
@@ -139,7 +141,7 @@ class Socket extends EventEmitter {
   /// @api public
   void emitWithAck(String event, dynamic data,
       {Function? ack, bool binary = false}) {
-    if (EVENTS.contains(event)) {
+    if (events.contains(event)) {
       super.emit(event, data);
     } else {
       var sendData = <dynamic>[event];
@@ -207,17 +209,30 @@ class Socket extends EventEmitter {
     // }
     // }
 
-    if (auth != null) {
-      if (auth is Function) {
-        auth((data) {
-          packet({'type': CONNECT, 'data': data});
-        });
-      } else {
-        packet({'type': CONNECT, 'data': auth});
-      }
+    if (auth is Function) {
+      auth((data) {
+        sendConnectPacket(data);
+      });
     } else {
-      packet({'type': CONNECT});
+      sendConnectPacket(auth);
     }
+  }
+
+  /// Sends a CONNECT packet to initiate the Socket.IO session.
+  ///
+  /// @param {data}
+  /// @api private
+  void sendConnectPacket(Map? data) {
+    packet({
+      'type': CONNECT,
+      'data': pid != null
+          ? {
+              'pid': pid,
+              'offset': lastOffset,
+              ...(data ?? {}),
+            }
+          : data,
+    });
   }
 
   /// Called upon engine or manager `error`
@@ -253,7 +268,8 @@ class Socket extends EventEmitter {
       case CONNECT:
         if (packet['data'] != null && packet['data']['sid'] != null) {
           final id = packet['data']['sid'];
-          onconnect(id);
+          final pid = packet['data']['pid'];
+          onconnect(id, pid);
         } else {
           emit('connect_error',
               'It seems you are trying to reach a Socket.IO server in v2.x with a v3.x client, but they are not compatible (more information here: https://socket.io/docs/v3/migrating-from-2-x-to-3-0/)');
@@ -304,6 +320,9 @@ class Socket extends EventEmitter {
     if (connected == true) {
       if (args.length > 2) {
         Function.apply(super.emit, [args.first, args.sublist(1)]);
+        if (pid != null && args[args.length - 1] is String) {
+          lastOffset = args[args.length - 1];
+        }
       } else {
         Function.apply(super.emit, args);
       }
@@ -318,17 +337,22 @@ class Socket extends EventEmitter {
   /// @api private
   Function ack(id) {
     var sent = false;
-    return (_) {
+    return (dynamic data) {
       // prevent double callbacks
       if (sent) return;
       sent = true;
-      _logger.fine('sending ack $_');
+      _logger.fine('sending ack $data');
 
-      packet({
-        'type': ACK,
-        'id': id,
-        'data': [_]
-      });
+      var sendData = <dynamic>[];
+      if (data is ByteBuffer || data is List<int>) {
+        sendData.add(data);
+      } else if (data is Iterable) {
+        sendData.addAll(data);
+      } else if (data != null) {
+        sendData.add(data);
+      }
+
+      packet({'type': ACK, 'id': id, 'data': sendData});
     };
   }
 
@@ -358,8 +382,9 @@ class Socket extends EventEmitter {
   /// Called upon server connect.
   ///
   /// @api private
-  void onconnect(id) {
+  void onconnect(id, pid) {
     this.id = id;
+    this.pid = pid; // defined only if connection state recovery is enabled
     connected = true;
     disconnected = false;
     emit('connect');
@@ -371,7 +396,7 @@ class Socket extends EventEmitter {
   ///
   /// @api private
   void emitBuffered() {
-    var i;
+    int i;
     for (i = 0; i < receiveBuffer.length; i++) {
       List args = receiveBuffer[i];
       if (args.length > 2) {
@@ -406,12 +431,12 @@ class Socket extends EventEmitter {
   /// @api private.
 
   void destroy() {
-    final _subs = subs;
-    if (_subs != null && _subs.isNotEmpty) {
+    final subs0 = subs;
+    if (subs0 != null && subs0.isNotEmpty) {
       // clean subscriptions to avoid reconnections
 
-      for (var i = 0; i < _subs.length; i++) {
-        _subs[i].destroy();
+      for (var i = 0; i < subs0.length; i++) {
+        subs0[i].destroy();
       }
       subs = null;
     }
